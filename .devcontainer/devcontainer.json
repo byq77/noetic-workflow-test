@@ -1,0 +1,45 @@
+{
+    "name": "devel_noetic_ws",
+    
+    "dockerComposeFile": ["compose.yml"],
+    "service": "devel_noetic",
+  
+    // "initializeCommand": "",
+  
+    "workspaceFolder": "/ros_ws/src",
+  
+    "customizations": {
+      "vscode": {
+        "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+        },        
+        "extensions": [
+			"aaron-bond.better-comments",
+			"cschlosser.doxdocgen",
+			"eamodio.gitlens",
+			"ms-azuretools.vscode-docker",
+			"ms-iot.vscode-ros",
+			"ms-python.black-formatter",
+			"ms-python.python",
+			"ms-python.isort",
+			"ms-vscode.cpptools-extension-pack",
+			"smilerobotics.urdf",
+			"streetsidesoftware.code-spell-checker",
+			"xaver.clang-format",
+			"shd101wyy.markdown-preview-enhanced",
+			"njpwerner.autodocstring",
+			"Gruntfuggly.todo-tree",
+			"maptz.regionfolder",
+			"donjayamanne.githistory",
+			"fabiospampinato.vscode-diff",
+			"redhat.vscode-xml",
+			"redhat.vscode-yaml",
+			"GitHub.copilot",
+			"genieai.chatgpt-vscode"
+		]
+      }
+    },
+    "remoteUser": "ros",
+    "postCreateCommand": "/devcontainer_scripts/workspace_init.sh"
+}
+    

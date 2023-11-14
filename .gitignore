@@ -1,0 +1,7 @@
+.vscode/
+!.vscode/tasks.json
+build/
+install/
+devel/
+log/
+__pycache__/

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  devel_noetic:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        WORKSPACE: /ros_ws
+    volumes:
+      - /dev:/dev
+      - /run/udev/control:/run/udev/control:ro"
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./scripts:/devcontainer_scripts
+      - ../:/ros_ws/src
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    group_add:
+      - plugdev
+      - dialout
+      - video
+    privileged: true
+    network_mode: host
+    ipc: host
+    runtime: nvidia
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_VISIBLE_DEVICES=all      
+      - NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+      - QT_X11_NO_MITSHM=1
+
+    # Overrides default entrypoint so things don't shut down after the process ends.
+    entrypoint: /bin/sh -c "while sleep 1000; do :; done"
+
+ 
