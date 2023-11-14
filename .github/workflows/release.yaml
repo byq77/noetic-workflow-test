@@ -72,6 +72,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                 fetch-depth: 0
+                fetch-tags: true
                 token: ${{ secrets.WORKFLOW_PAT }}
             - 
               name: Get latest tag
@@ -90,7 +91,7 @@ jobs:
             -
               name: Catkin release
               id: catkin_release
-              uses: byq77/action-catkin-release@v0.2.1
+              uses: byq77/action-catkin-release@v0.2.2
               with:
                 new_version: ${{ steps.bump-semver.outputs.new_version }}
                 github_token: ${{ secrets.GITHUB_TOKEN }}
