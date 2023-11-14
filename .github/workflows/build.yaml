@@ -1,10 +1,11 @@
 name: Run catkin-release and dispatch build
 on: 
-    repository_dispatch:
-        types: ["trigger_image_build"]
+  repository_dispatch:
+      types: ["trigger_image_build"]
 jobs:
-    hello-world:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Hello world action step
-              run: echo "Hello world"
+  hello-world:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Hello world action step
+        run: echo "Hello worl 
