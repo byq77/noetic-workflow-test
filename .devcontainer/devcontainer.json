@@ -1,5 +1,5 @@
 {
-    "name": "devel_noetic_ws",
+    "name": "noetic_workflow_test",
     
     "dockerComposeFile": ["compose.yml"],
     "service": "devel_noetic",
