@@ -85,7 +85,7 @@ jobs:
             -
               name: Catkin release
               id: catkin_release
-              uses: byq77/action-catkin-release@v0.2.0
+              uses: byq77/action-catkin-release@v0.2.1
               with:
                 new_version: ${{ steps.bump-semver.outputs.new_version }}
                 github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -94,7 +94,8 @@ jobs:
             -
               name: Push new commits and tags
               run: |
-                git push origin ${{ github.ref_name }} --follow-tags
+                git push origin ${{ github.ref_name }}
+                git push origin ${{ github.ref_name }} --tags
   
   dispatch_build:
     runs-on: ubuntu-latest

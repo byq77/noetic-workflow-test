@@ -8,5 +8,4 @@ jobs:
     steps:
       - 
         name: Hello world action step
-        run: echo "Hello worl 
-        
+        run: echo "Hello world"
