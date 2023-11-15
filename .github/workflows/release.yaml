@@ -1,10 +1,113 @@
-name: Bump version and dispatch a release
-on: 
+name: Bump version and dispatch an image build
+on:
+    pull_request:
+      branches: main
+      types: [closed]
     workflow_dispatch:
+      inputs:
+        bump:
+          description: "What to bump"
+          required: true
+          type: choice
+          options:
+            - "patch"
+            - "minor"
+            - "major"
+        dispatch_build:
+            description: "Do you want to dispatch an image build"
+            required: false
+            type: choice
+            options:
+              - "yes"
+              - "no"
+            default: "no"                 
 jobs:
-    hello-world:
+  prepare-arguments:
+      name: Prepare arguments
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name == 'pull_request' &&  github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}
+      outputs:
+        bump: ${{ env.bump }}
+        dispatch_build: ${{ env.dispatch_build }}
+      steps:
+        - 
+          name: Set output if workflow_dispatch
+          if: ${{ github.event_name == 'workflow_dispatch' }}
+          run: |
+            echo "bump=${{ github.event.inputs.bump }}" >> $GITHUB_ENV
+            echo "dispatch_build=${{ github.event.inputs.dispatch_build }}" >> $GITHUB_ENV
+        - 
+          name: Get version bump pull_request
+          if: ${{ github.event_name == 'pull_request' }}
+          id: release-label
+          uses: actions-ecosystem/action-release-label@v1
+        - 
+          name: Set output if pull_request
+          if: ${{ github.event_name == 'pull_request' && steps.release-label.outputs.level != null }}
+          run: |
+            echo "bump=${{ steps.release-label.outputs.level }}" >> $GITHUB_ENV
+            echo "dispatch_build=yes" >> $GITHUB_ENV
+        - 
+          name: Set output if unlabeled pull_request
+          if: ${{ github.event_name == 'pull_request' && steps.release-label.outputs.level == null }}
+          run: |
+            echo "bump=patch" >> $GITHUB_ENV
+            echo "dispatch_build=yes" >> $GITHUB_ENV
+        
+  catkin-release:
+        name: Bump version and run catkin_prepare_release
         runs-on: ubuntu-latest
+        needs: prepare-arguments
+        outputs:
+            new_version: ${{ steps.bump-semver.outputs.new_version }}
         steps:
-            - name: Hello world action step
-              run: echo "Hello world"      
-              
+            - 
+              name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+                fetch-tags: true
+                token: ${{ secrets.WORKFLOW_PAT }}
+            - 
+              name: Get latest tag
+              uses: actions-ecosystem/action-get-latest-tag@v1
+              id: get-latest-tag
+              with:
+                with_initial_version: false
+                semver_only: true
+            - 
+              name: Bump version
+              id: bump-semver
+              uses: actions-ecosystem/action-bump-semver@v1
+              with:
+                current_version: ${{ steps.get-latest-tag.outputs.tag }}
+                level: ${{ needs.prepare-arguments.outputs.bump }}
+            -
+              name: Catkin release
+              id: catkin_release
+              uses: byq77/action-catkin-release@v0.2.0
+              with:
+                new_version: ${{ steps.bump-semver.outputs.new_version }}
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                git_user: action-bot
+                git_email: action-bot@action-bot.com
+            -
+              name: Push new commits and tags
+              run: |
+                git push origin ${{ github.ref_name }} --follow-tags
+  
+  dispatch_build:
+    runs-on: ubuntu-latest
+    needs: [catkin-release, prepare-arguments]
+    if: ${{ needs.prepare-arguments.outputs.dispatch_build == 'yes' }}
+    steps:
+    -
+      name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.WORKFLOW_PAT }}
+        event-type: trigger_image_build
+        client-payload: | 
+              {
+                "new_version": "${{ needs.catkin-release.outputs.new_version }}"
+              }

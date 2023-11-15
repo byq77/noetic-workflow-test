@@ -1,4 +1,4 @@
-name: Run catkin-release and dispatch build
+name: Run image build
 on: 
   repository_dispatch:
       types: ["trigger_image_build"]
