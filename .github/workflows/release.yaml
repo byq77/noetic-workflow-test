@@ -94,8 +94,7 @@ jobs:
             -
               name: Push new commits and tags
               run: |
-                git push origin ${{ github.ref_name }}
-                git push origin ${{ github.ref_name }} --tags
+                git push origin ${{ github.ref_name }} --follow-tags
   
   dispatch_build:
     runs-on: ubuntu-latest
