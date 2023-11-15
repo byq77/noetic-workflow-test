@@ -31,14 +31,10 @@ jobs:
         dispatch_build: ${{ env.dispatch_build }}
       steps:
         - 
-          name: Get version bump workflow_dispatch
+          name: Set output if workflow_dispatch
           if: ${{ github.event_name == 'workflow_dispatch' }}
           run: |
             echo "bump=${{ github.event.inputs.bump }}" >> $GITHUB_ENV
-        -
-          name: Set dispatch_build if workflow_dispatch
-          if: ${{ github.event_name == 'workflow_dispatch' }}
-          run: |
             echo "dispatch_build=${{ github.event.inputs.dispatch_build }}" >> $GITHUB_ENV
         - 
           name: Get version bump pull_request
@@ -47,23 +43,19 @@ jobs:
           uses: actions-ecosystem/action-release-label@v1
         - 
           name: Set output if pull_request
-          if: ${{ steps.release-label.outputs.level != null }}
+          if: ${{ github.event_name == 'pull_request' && steps.release-label.outputs.level != null }}
           run: |
             echo "bump=${{ steps.release-label.outputs.level }}" >> $GITHUB_ENV
+            echo "dispatch_build=yes" >> $GITHUB_ENV
         - 
           name: Set output if unlabeled pull_request
           if: ${{ github.event_name == 'pull_request' && steps.release-label.outputs.level == null }}
           run: |
             echo "bump=patch" >> $GITHUB_ENV
-        -
-          name: Set dispatch_build if pull_request
-          if: ${{ github.event_name == 'pull_request'}}
-          run: |
             echo "dispatch_build=yes" >> $GITHUB_ENV
         
   catkin-release:
         name: Bump version and run catkin_prepare_release
-        if: ${{ needs.prepare-arguments.outputs.bump != null }}
         runs-on: ubuntu-latest
         needs: prepare-arguments
         outputs:
@@ -99,6 +91,10 @@ jobs:
                 github_token: ${{ secrets.GITHUB_TOKEN }}
                 git_user: action-bot
                 git_email: action-bot@action-bot.com
+            -
+              name: Push new commits and tags
+              run: |
+                git push origin ${{ github.ref_name }} --follow-tags
   
   dispatch_build:
     runs-on: ubuntu-latest
