@@ -85,7 +85,7 @@ jobs:
             -
               name: Catkin release
               id: catkin_release
-              uses: byq77/action-catkin-release@v0.2.0
+              uses: husarion-ci/action-catkin-release@v0.2.1
               with:
                 new_version: ${{ steps.bump-semver.outputs.new_version }}
                 github_token: ${{ secrets.GITHUB_TOKEN }}
